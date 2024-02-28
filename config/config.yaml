@@ -1,0 +1,21 @@
+# 服务配置
+serverPort: ":8080"
+
+# 数据库配置
+mysql:
+  DbHost: 127.0.0.1
+  port: "3306"
+  config: charset=utf8mb4&parseTime=True&loc=Local
+  DbName: animal_database
+  username: root
+  password: "123456"
+#  prefix: ""
+#  singular: false
+#  engine: ""
+#  max-idle-conns: 10
+#  max-open-conns: 100
+#  log-mode: error
+#  log-zap: false
+
+# 上传记录模板Excel文件路径
+uploadTemplateExcelPath: "resources/static/file/template.xlsx"
