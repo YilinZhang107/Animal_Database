@@ -1,0 +1,8 @@
+time="2024-02-05 20:15:01" level=info msg="get upload excel file err: http: no such file"
+time="2024-02-05 20:25:13" level=info msg="get upload excel file err: request Content-Type isn't multipart/form-data"
+time="2024-02-05 20:32:58" level=info msg="get upload excel file err: http: no such file"
+time="2024-02-05 20:39:21" level=info msg="get upload excel file err: request Content-Type isn't multipart/form-data"
+time="2024-02-09 11:13:44" level=info msg="user update email err json: cannot unmarshal object into Go struct field UserService.grade of type uint8"
+time="2024-02-09 11:17:28" level=info msg="user update email err json: cannot unmarshal object into Go struct field UserService.grade of type uint8"
+time="2024-02-09 11:19:58" level=info msg="user update email err json: cannot unmarshal object into Go struct field UserService.grade of type uint8"
+time="2024-02-09 11:20:13" level=info msg="user update email err json: cannot unmarshal object into Go struct field UserService.grade of type uint8"
