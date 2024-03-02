@@ -30,6 +30,23 @@ func ReviewURecord(c *gin.Context) {
 	}
 }
 
+// DeleteURecord 删除记录
+func DeleteURecord(c *gin.Context) {
+	var recordService service.URecordService
+
+	//鉴权
+	claims, err := utils.VerifyToken(c.GetHeader("Authorization"))
+	id := claims.ID
+
+	if err = c.ShouldBind(&recordService); err == nil {
+		response := recordService.DeleteURecord(id)
+		c.JSON(http.StatusOK, response)
+	} else {
+		c.JSON(http.StatusBadRequest, serializer.CreateErrResponse(err))
+		utils.LogrusObj.Infoln("delete Record api:", err)
+	}
+}
+
 // GetUnreviewedRecord 获取等待审核的记录
 func GetUnreviewedRecord(c *gin.Context) {
 	var recordService service.URecordService
@@ -46,6 +63,22 @@ func GetUnreviewedRecord(c *gin.Context) {
 		utils.LogrusObj.Infoln("get unreviewed Record api:", err)
 	}
 
+}
+
+// GetUnreviewedRecordCount 获取等待审核的记录数量
+func GetUnreviewedRecordCount(c *gin.Context) {
+	var recordService service.URecordService
+	//鉴权
+	claims, err := utils.VerifyToken(c.GetHeader("Authorization"))
+	id := claims.ID
+
+	if err = c.ShouldBind(&recordService); err == nil {
+		response := recordService.GetUnreviewedRecordCount(id)
+		c.JSON(http.StatusOK, response)
+	} else {
+		c.JSON(http.StatusBadRequest, serializer.CreateErrResponse(err))
+		utils.LogrusObj.Infoln("get unreviewed Record count api:", err)
+	}
 }
 
 // UploadRecord 上传记录

@@ -63,12 +63,16 @@ func NewRouter() {
 			authed.POST("user/deleteUser", v1.DeleteUser)           // 删除用户
 
 			//UnreviewedRecord
-			authed.POST("record/uploadByExcel", v1.UploadRecord)    // 上传记录
-			authed.GET("record/getURecord", v1.GetUnreviewedRecord) // 查询待审批记录
-			authed.POST("record/review", v1.ReviewURecord)          // 审批待审批记录
+			authed.POST("record/uploadByExcel", v1.UploadRecord)              // 上传记录
+			authed.GET("record/getURecord", v1.GetUnreviewedRecord)           // 查询待审批记录
+			authed.GET("record/getURecordCount", v1.GetUnreviewedRecordCount) // 查询待审批记录数量
+			authed.POST("record/review", v1.ReviewURecord)                    // 审批待审批记录
+			authed.POST("record/deleteURecord", v1.DeleteURecord)             // 删除待审批记录
 
 			//Record
-			authed.GET("record/getRecord", v1.GetRecord) // 查询现存记录
+			authed.GET("record/getRecord", v1.GetRecord)          // 查询现存记录
+			authed.POST("record/deleteRecord", v1.DeleteRecord)   // 删除现存记录
+			apiv1.GET("record/getRecordCount", v1.GetRecordCount) // 查询现存记录数量
 
 		}
 

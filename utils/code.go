@@ -18,11 +18,13 @@ const (
 	UserNotExist       = 10005
 	ErrorNoPermission  = 10006
 	ErrorGrade         = 10007
+	ErrorPasswordEmpty = 10008
 	//数据库错误
 	ErrorDatabase            = 40001
 	ErrorGetUnreviewedRecord = 40006
 	DatabaseExistError       = 40007
 	ErrorGetRecordByArea     = 40008
+	ErrorGetRecordByIds      = 40009
 	//记录
 	OpenUploadFileErr    = 20001
 	CreateTempFileErr    = 20002
@@ -57,11 +59,13 @@ var msgs = map[int]string{
 	UserNotExist:       "用户不存在",
 	ErrorNoPermission:  "用户无权限",
 	ErrorGrade:         "需要修改的权限错误",
+	ErrorPasswordEmpty: "密码为空",
 	//数据库错误
 	ErrorDatabase:            "数据库错误",
 	ErrorGetUnreviewedRecord: "获取待审批记录错误",
 	DatabaseExistError:       "数据库中数据已存在",
 	ErrorGetRecordByArea:     "按地区获取记录错误",
+	ErrorGetRecordByIds:      "获取现存记录错误",
 	//记录
 	OpenUploadFileErr:    "打开上传文件错误",
 	CreateTempFileErr:    "创建临时文件错误",

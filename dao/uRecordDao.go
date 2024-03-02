@@ -34,6 +34,12 @@ func GetUnreviewedRecord(pageNum int, pageSize int) (uRecords *[]model.Unreviewe
 	return uRecords, err
 }
 
+// GetUnreviewedRecordCount 获取待审批记录总数
+func GetUnreviewedRecordCount() (count int64, err error) {
+	err = DB.Model(model.UnreviewedRecord{}).Count(&count).Error
+	return count, err
+}
+
 // UploadUnRecord 上传待审批记录
 func UploadUnRecord(records *[]model.UnreviewedRecord) (returnErr error, existRecordsIndex []string) {
 	for i, record := range *records {

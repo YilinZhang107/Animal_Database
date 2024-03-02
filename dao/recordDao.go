@@ -17,6 +17,29 @@ func GetRecord(pageNum int, pageSize int) (records *[]model.Record, err error) {
 	return records, err
 }
 
+// GetRecordCount 获取记录总数
+func GetRecordCount() (count int64, err error) {
+	err = DB.Model(model.Record{}).Count(&count).Error
+	return count, err
+}
+
+// GetRecordByIds 根据id数组获取记录
+func GetRecordByIds(ids []uint) (records *[]model.Record, err error) {
+	err = DB.Model(model.Record{}).Find(&records, ids).Error //多条查询
+	//根据ids数组查询, 这三个方法都行
+	//err = DB.Model(model.UnreviewedRecord{}).Where("id in (?)", ids).Find(&uRecords).Error
+	//根据id进行查询
+	//for _, id := range ids {
+	//	err = DB.Model(model.UnreviewedRecord{}).Where("id = ?", id).First(&uRecords).Error
+	//}
+	return records, err
+}
+
+// DeleteRecordByIds 根据id数组删除记录
+func DeleteRecordByIds(records *[]model.Record) error {
+	return DB.Model(model.Record{}).Unscoped().Delete(&records).Error
+}
+
 func UploadRecord(records *[]model.Record) (returnErr error, existRecordsIndex []string) {
 	for _, record := range *records {
 		if err := DB.Model(model.Record{}).Create(&record).Error; err != nil {

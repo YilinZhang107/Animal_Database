@@ -51,7 +51,7 @@ func (r *URecordService) ReviewURecord(id uint) serializer.Response {
 		uid := uint(id)
 		ids = append(ids, uid)
 	}
-	//根据id数组获取记录
+	// 根据id数组获取记录
 	uRecords, err := dao.GetURecordByIds(ids)
 	if err != nil {
 		code = utils.ErrorGetURecordByIds
@@ -89,6 +89,52 @@ func (r *URecordService) ReviewURecord(id uint) serializer.Response {
 	return serializer.CreateResponse(code, nil, utils.GetMsg(code))
 }
 
+// DeleteURecord 删除记录
+func (r *URecordService) DeleteURecord(id uint) serializer.Response {
+	code := utils.SUCCESS
+	//先判断用户是否有权限
+	user, err := dao.GetUserById(id)
+	if err != nil {
+		code = utils.UserNotExist
+		return serializer.CreateResponse(code, "未查到该用户", utils.GetMsg(code))
+	}
+	if user.Grade < 2 {
+		code = utils.UserGradeErr
+		return serializer.CreateResponse(code, "无权删除", utils.GetMsg(code))
+	}
+	//将传入的id数组转换为uint数组
+	var ids []uint
+	//把ReviewedRecords字符串按逗号分开
+	idsStr := strings.Split(r.ReviewedRecords, ",")
+	for _, idStr := range idsStr {
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			code = utils.StringToUintErr
+			return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+		}
+		uid := uint(id)
+		ids = append(ids, uid)
+	}
+	// 根据id数组获取记录
+	uRecords, err := dao.GetURecordByIds(ids)
+	if err != nil {
+		code = utils.ErrorGetURecordByIds
+		return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+	}
+	// 如果找到的记录小于传入的id数组长度,说明有些记录不存在,返回错误
+	if len(*uRecords) < len(ids) {
+		code = utils.ErrorGetURecordByIds
+		return serializer.CreateResponse(code, "选择的记录ID不存在或已审批,请重试", utils.GetMsg(code))
+	}
+	//删除这些记录,(在未审批表中改为已审批)
+	err = dao.DeleteURecordByIds(uRecords)
+	if err != nil {
+		code = utils.ErrorDelURecordByIds
+		return serializer.CreateResponse(code, "删除失败", utils.GetMsg(code))
+	}
+	return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+}
+
 // GetUnreviewedRecord 获取待审批记录
 func (r *URecordService) GetUnreviewedRecord(id uint) serializer.Response {
 	code := utils.SUCCESS
@@ -115,6 +161,27 @@ func (r *URecordService) GetUnreviewedRecord(id uint) serializer.Response {
 		return serializer.CreateResponse(code, nil, utils.GetMsg(code))
 	}
 	return serializer.CreateResponse(code, uRecords, utils.GetMsg(code))
+}
+
+// GetUnreviewedRecordCount 获取待审批记录数量
+func (r *URecordService) GetUnreviewedRecordCount(id uint) serializer.Response {
+	code := utils.SUCCESS
+	//先判断用户是否有权限
+	user, err := dao.GetUserById(id)
+	if err != nil {
+		code = utils.UserNotExist
+		return serializer.CreateResponse(code, "未查到该用户", utils.GetMsg(code))
+	}
+	if user.Grade < 3 {
+		code = utils.UserGradeErr
+		return serializer.CreateResponse(code, "无权审批", utils.GetMsg(code))
+	}
+	count, err := dao.GetUnreviewedRecordCount()
+	if err != nil {
+		code = utils.ErrorDatabase
+		return serializer.CreateResponse(code, err.Error(), utils.GetMsg(code))
+	}
+	return serializer.CreateResponse(code, count, utils.GetMsg(code))
 }
 
 // UploadURecord 上传记录

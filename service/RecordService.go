@@ -11,13 +11,16 @@ import (
 	"Animal_database/model"
 	"Animal_database/serializer"
 	"Animal_database/utils"
+	"strconv"
+	"strings"
 )
 
 type RecordService struct {
-	Page     int    `form:"page" json:"page"`
-	Size     int    `form:"size" json:"size"`
-	Province string `form:"province" json:"province"`
-	City     string `form:"city" json:"city"`
+	Page            int    `form:"page" json:"page"`
+	Size            int    `form:"size" json:"size"`
+	Province        string `form:"province" json:"province"`
+	City            string `form:"city" json:"city"`
+	ReviewedRecords string `form:"reviewedRecords" json:"reviewedRecords"`
 }
 
 // GetRecord 获取现有记录 todo 可能还需要根据权限修改能看到的数据详情
@@ -37,9 +40,9 @@ func (r *RecordService) GetRecord(id uint) serializer.Response {
 		return serializer.CreateResponse(code, "未查到该用户", utils.GetMsg(code))
 	}
 	// todo
-	if user.Grade < 3 {
+	if user.Grade == 0 {
 		code = utils.UserGradeErr
-		return serializer.CreateResponse(code, "无权审批", utils.GetMsg(code))
+		return serializer.CreateResponse(code, "无权查看", utils.GetMsg(code))
 	}
 	uRecords, err := dao.GetRecord(r.Page, r.Size)
 	if err != nil {
@@ -113,4 +116,61 @@ func (r *RecordService) GetByArea() serializer.Response {
 		}
 	}
 	return serializer.CreateResponse(code, eachRecord, utils.GetMsg(code))
+}
+
+// GetRecordCount 获取现存记录数量
+func (r *RecordService) GetRecordCount(id uint) serializer.Response {
+	code := utils.SUCCESS
+	count, err := dao.GetRecordCount()
+	if err != nil {
+		code = utils.ErrorDatabase
+		return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+	}
+	return serializer.CreateResponse(code, count, utils.GetMsg(code))
+}
+
+// DeleteRecord 删除记录
+func (r *RecordService) DeleteRecord(id uint) serializer.Response {
+	code := utils.SUCCESS
+	//先判断用户是否有权限
+	user, err := dao.GetUserById(id)
+	if err != nil {
+		code = utils.UserNotExist
+		return serializer.CreateResponse(code, "未查到该用户", utils.GetMsg(code))
+	}
+	if user.Grade < 3 {
+		code = utils.UserGradeErr
+		return serializer.CreateResponse(code, "无权删除", utils.GetMsg(code))
+	}
+	//将传入的id数组转换为uint数组
+	var ids []uint
+	//把ReviewedRecords字符串按逗号分开
+	idsStr := strings.Split(r.ReviewedRecords, ",")
+	for _, idStr := range idsStr {
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			code = utils.StringToUintErr
+			return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+		}
+		uid := uint(id)
+		ids = append(ids, uid)
+	}
+	// 根据id数组获取记录
+	records, err := dao.GetRecordByIds(ids)
+	if err != nil {
+		code = utils.ErrorGetRecordByIds
+		return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+	}
+	// 如果找到的记录小于传入的id数组长度,说明有些记录不存在,返回错误
+	if len(*records) < len(ids) {
+		code = utils.ErrorGetURecordByIds
+		return serializer.CreateResponse(code, "选择的记录ID不存在或已删除,请重试", utils.GetMsg(code))
+	}
+	//删除这些记录
+	err = dao.DeleteRecordByIds(records)
+	if err != nil {
+		code = utils.ErrorDelURecordByIds
+		return serializer.CreateResponse(code, "删除失败", utils.GetMsg(code))
+	}
+	return serializer.CreateResponse(code, nil, utils.GetMsg(code))
 }

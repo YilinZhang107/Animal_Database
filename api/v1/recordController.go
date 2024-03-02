@@ -42,3 +42,35 @@ func GetByArea(c *gin.Context) {
 		utils.LogrusObj.Infoln("get Record api:", err)
 	}
 }
+
+// GetRecordCount 获取现存记录数量
+func GetRecordCount(c *gin.Context) {
+	var recordService service.RecordService
+	//鉴权
+	claims, err := utils.VerifyToken(c.GetHeader("Authorization"))
+	id := claims.ID
+
+	if err = c.ShouldBind(&recordService); err == nil {
+		response := recordService.GetRecordCount(id)
+		c.JSON(http.StatusOK, response)
+	} else {
+		c.JSON(http.StatusBadRequest, serializer.CreateErrResponse(err))
+		utils.LogrusObj.Infoln("get Record api:", err)
+	}
+}
+
+// DeleteRecord 删除记录
+func DeleteRecord(c *gin.Context) {
+	var recordService service.RecordService
+	//鉴权
+	claims, err := utils.VerifyToken(c.GetHeader("Authorization"))
+	id := claims.ID
+
+	if err = c.ShouldBind(&recordService); err == nil {
+		response := recordService.DeleteRecord(id)
+		c.JSON(http.StatusOK, response)
+	} else {
+		c.JSON(http.StatusBadRequest, serializer.CreateErrResponse(err))
+		utils.LogrusObj.Infoln("get Record api:", err)
+	}
+}
