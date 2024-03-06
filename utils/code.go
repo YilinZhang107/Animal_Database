@@ -39,6 +39,7 @@ const (
 	StringToUintErr      = 20011
 	ErrorGetURecordByIds = 20012
 	ErrorDelURecordByIds = 20013
+	TimeParseErr         = 20014
 	//ErrorHashPassword
 	ErrorHashPassword = 40002
 	//jwt
@@ -80,6 +81,7 @@ var msgs = map[int]string{
 	StringToUintErr:      "字符串转换为无符号整数错误",
 	ErrorGetURecordByIds: "获取记录错误",
 	ErrorDelURecordByIds: "删除记录错误",
+	TimeParseErr:         "时间解析错误",
 
 	//
 	ErrorHashPassword: "密码加密错误",

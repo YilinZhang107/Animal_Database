@@ -7,20 +7,139 @@ package dao
 
 import (
 	"Animal_database/model"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // GetRecord  分页获取记录
-func GetRecord(pageNum int, pageSize int) (records *[]model.Record, err error) {
-	err = DB.Limit(pageSize).Offset((pageNum - 1) * pageSize).Find(&records).Error
+func GetRecord(pageNum int, pageSize int, gridNumber string, lineNumber string,
+	startTime string, endTime string, province string, city string, county string,
+	speciesName string, investigator string, livingEnvironmentType string) (records *[]model.Record, data interface{}, err error) {
 
-	return records, err
+	query := DB.Model(model.Record{})
+	if gridNumber != "" {
+		query = query.Where("grid_number LIKE ?", "%"+gridNumber+"%")
+	}
+	if lineNumber != "" {
+		query = query.Where("line_number LIKE ?", "%"+lineNumber+"%")
+	}
+	if county != "" {
+		query = query.Where("investigation_county = ?", county)
+	} else if city != "" {
+		query = query.Where("investigation_city = ?", city)
+	} else if province != "" {
+		query = query.Where("investigation_province = ?", province)
+	}
+	if startTime != "" || endTime != "" { //只要设置了一个时间必须设置另一个时间
+		if startTime == "" {
+			startTime = "631123200"
+		}
+		if endTime == "" {
+			//更改endTime为当前时间的时间戳
+			endTime = strconv.FormatInt(time.Now().Unix(), 10)
+		}
+		nowTime := strconv.FormatInt(time.Now().Unix(), 10)
+		now, err := strconv.ParseInt(nowTime, 10, 64)
+
+		// 字符串转为int64
+		startTime, err := strconv.ParseInt(startTime, 10, 64) // 10进制, 64位
+		if startTime < 631123200 || startTime > now || err != nil {
+			return records, "开始时间解析错误", err
+		}
+		// 解析开始和结束日期与时间戳为time.Time格式
+		start := time.Unix(startTime, 0).Format("2006-01-02 15:04:05")
+
+		endTime, err := strconv.ParseInt(endTime, 10, 64)
+		if endTime < 631123200 || endTime > now || err != nil {
+			return records, "结束时间解析错误", err
+		}
+		end := time.Unix(endTime, 0).Format("2006-01-02 15:04:05")
+
+		//如果开始时间大于结束时间,返回错误
+		if startTime > endTime {
+			return records, "开始时间在结束时间之后", err
+		}
+		query = query.Where("date_and_time BETWEEN ? AND ?", start, end)
+	}
+	if speciesName != "" {
+		query = query.Where("species_name LIKE ?", "%"+speciesName+"%")
+	}
+	if investigator != "" {
+		query = query.Where("investigator = ?", investigator)
+	}
+	if livingEnvironmentType != "" {
+		query = query.Where("living_environment_type LIKE ?", "%"+livingEnvironmentType+"%")
+	}
+
+	err = query.Limit(pageSize).Offset((pageNum - 1) * pageSize).Find(&records).Error
+
+	return records, nil, err
 }
 
 // GetRecordCount 获取记录总数
-func GetRecordCount() (count int64, err error) {
-	err = DB.Model(model.Record{}).Count(&count).Error
-	return count, err
+func GetRecordCount(gridNumber string, lineNumber string,
+	startTime string, endTime string, province string, city string, county string,
+	speciesName string, investigator string, livingEnvironmentType string) (count int64, data interface{}, err error) {
+
+	query := DB.Model(model.Record{})
+	if gridNumber != "" {
+		query = query.Where("grid_number LIKE ?", "%"+gridNumber+"%")
+	}
+	if lineNumber != "" {
+		query = query.Where("line_number LIKE ?", "%"+lineNumber+"%")
+	}
+	if county != "" {
+		query = query.Where("investigation_county = ?", county)
+	} else if city != "" {
+		query = query.Where("investigation_city = ?", city)
+	} else if province != "" {
+		query = query.Where("investigation_province = ?", province)
+	}
+	if startTime != "" || endTime != "" { //只要设置了一个时间必须设置另一个时间
+		if startTime == "" {
+			startTime = "631123200"
+		}
+		if endTime == "" {
+			//更改endTime为当前时间的时间戳
+			endTime = strconv.FormatInt(time.Now().Unix(), 10)
+		}
+		nowTime := strconv.FormatInt(time.Now().Unix(), 10)
+		now, err := strconv.ParseInt(nowTime, 10, 64)
+
+		// 字符串转为int64
+		startTime, err := strconv.ParseInt(startTime, 10, 64) // 10进制, 64位
+		if startTime < 631123200 || startTime > now || err != nil {
+			return 0, "开始时间解析错误", err
+		}
+
+		// 解析开始和结束日期与时间戳为time.Time格式
+		start := time.Unix(startTime, 0).Format("2006-01-02 15:04:05")
+
+		endTime, err := strconv.ParseInt(endTime, 10, 64)
+		if endTime < 631123200 || endTime > now || err != nil {
+			return 0, "结束时间解析错误", err
+		}
+		end := time.Unix(endTime, 0).Format("2006-01-02 15:04:05")
+
+		//如果开始时间大于结束时间,返回错误
+		if startTime > endTime {
+			return 0, "开始时间在结束时间之后", err
+		}
+		query = query.Where("date_and_time BETWEEN ? AND ?", start, end)
+	}
+	if speciesName != "" {
+		query = query.Where("species_name LIKE ?", "%"+speciesName+"%")
+	}
+	if investigator != "" {
+		query = query.Where("investigator = ?", investigator)
+	}
+	if livingEnvironmentType != "" {
+		query = query.Where("living_environment_type LIKE ?", "%"+livingEnvironmentType+"%")
+	}
+
+	err = query.Count(&count).Error
+	return count, data, err
 }
 
 // GetRecordByIds 根据id数组获取记录

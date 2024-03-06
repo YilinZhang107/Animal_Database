@@ -70,9 +70,9 @@ func NewRouter() {
 			authed.POST("record/deleteURecord", v1.DeleteURecord)             // 删除待审批记录
 
 			//Record
-			authed.GET("record/getRecord", v1.GetRecord)          // 查询现存记录
-			authed.POST("record/deleteRecord", v1.DeleteRecord)   // 删除现存记录
-			apiv1.GET("record/getRecordCount", v1.GetRecordCount) // 查询现存记录数量
+			authed.POST("record/getRecord", v1.GetRecord)           // 查询现存记录
+			authed.POST("record/deleteRecord", v1.DeleteRecord)     // 删除现存记录
+			authed.POST("record/getRecordCount", v1.GetRecordCount) // 查询现存记录数量
 
 		}
 

@@ -16,11 +16,19 @@ import (
 )
 
 type RecordService struct {
-	Page            int    `form:"page" json:"page"`
-	Size            int    `form:"size" json:"size"`
-	Province        string `form:"province" json:"province"`
-	City            string `form:"city" json:"city"`
-	ReviewedRecords string `form:"reviewedRecords" json:"reviewedRecords"`
+	Page                  int    `form:"page" json:"page"`
+	Size                  int    `form:"size" json:"size"`
+	Province              string `form:"province" json:"province"`
+	City                  string `form:"city" json:"city"`
+	County                string `form:"county" json:"county"`
+	ReviewedRecords       string `form:"reviewedRecords" json:"reviewedRecords"`
+	GridNumber            string `form:"gridNumber" json:"gridNumber"` //样线样点模糊匹配
+	LineNumber            string `form:"lineNumber" json:"lineNumber"`
+	StartTime             string `form:"startTime" json:"startTime"` // todo 时间格式
+	EndTime               string `form:"endTime" json:"endTime"`
+	SpeciesName           string `form:"speciesName" json:"speciesName"`                     //物种名称精确匹配
+	Investigator          string `form:"investigator" json:"investigator"`                   //调查人精确匹配
+	LivingEnvironmentType string `form:"livingEnvironmentType" json:"livingEnvironmentType"` //生境类型模糊匹配
 }
 
 // GetRecord 获取现有记录 todo 可能还需要根据权限修改能看到的数据详情
@@ -39,15 +47,17 @@ func (r *RecordService) GetRecord(id uint) serializer.Response {
 		code = utils.UserNotExist
 		return serializer.CreateResponse(code, "未查到该用户", utils.GetMsg(code))
 	}
-	// todo
+	// todo 只有高等级用户能下载
 	if user.Grade == 0 {
 		code = utils.UserGradeErr
 		return serializer.CreateResponse(code, "无权查看", utils.GetMsg(code))
 	}
-	uRecords, err := dao.GetRecord(r.Page, r.Size)
-	if err != nil {
-		code = utils.ErrorGetUnreviewedRecord
-		return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+
+	uRecords, data, err := dao.GetRecord(r.Page, r.Size, r.GridNumber, r.LineNumber,
+		r.StartTime, r.EndTime, r.Province, r.City, r.County, r.SpeciesName, r.Investigator, r.LivingEnvironmentType)
+	if err != nil || data != nil {
+		code = utils.ErrorGetRecordByIds
+		return serializer.CreateResponse(code, data, utils.GetMsg(code))
 	}
 	return serializer.CreateResponse(code, uRecords, utils.GetMsg(code))
 }
@@ -121,10 +131,12 @@ func (r *RecordService) GetByArea() serializer.Response {
 // GetRecordCount 获取现存记录数量
 func (r *RecordService) GetRecordCount(id uint) serializer.Response {
 	code := utils.SUCCESS
-	count, err := dao.GetRecordCount()
-	if err != nil {
-		code = utils.ErrorDatabase
-		return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+
+	count, data, err := dao.GetRecordCount(r.GridNumber, r.LineNumber,
+		r.StartTime, r.EndTime, r.Province, r.City, r.County, r.SpeciesName, r.Investigator, r.LivingEnvironmentType)
+	if err != nil || data != nil {
+		code = utils.ErrorGetRecordByIds
+		return serializer.CreateResponse(code, data, utils.GetMsg(code))
 	}
 	return serializer.CreateResponse(code, count, utils.GetMsg(code))
 }
