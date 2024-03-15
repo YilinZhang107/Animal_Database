@@ -61,14 +61,18 @@ func UserUpdateAvatar(c *gin.Context) {
 	file, fileHeader, _ := c.Request.FormFile("file")
 	fileName := fileHeader.Filename
 	claims, err := utils.VerifyToken(c.GetHeader("Authorization"))
-	//todo 需要做什么吗
 	if err != nil {
 		c.JSON(http.StatusBadRequest, serializer.CreateErrResponse(err))
 		utils.LogrusObj.Infoln("user verify err", err)
 		return
 	}
 	id := claims.ID
-	//id := uint(idFloat.(float64))
+	// 检查文件类型,只能是jpg或png,大小不能超过3M
+	if fileHeader.Size > 3*1024*1024 || (fileHeader.Header.Get("Content-Type") != "image/jpeg" && fileHeader.Header.Get("Content-Type") != "image/png") {
+		c.JSON(http.StatusBadRequest, serializer.CreateResponse(400, nil, "文件过大或格式错误,请上传小于3M的jpg或png文件"))
+		return
+	}
+
 	if err := c.ShouldBind(&userUpdateService); err == nil {
 		response := userUpdateService.UpdateAvatar(c.Request.Context(), id, file, fileName)
 		c.JSON(http.StatusOK, response)
@@ -78,7 +82,7 @@ func UserUpdateAvatar(c *gin.Context) {
 	}
 }
 
-// UserUpdatePassword 用户更新密码
+// UserChangePassword  用户更新密码
 func UserChangePassword(c *gin.Context) {
 	var userUpdateService service.UserService
 	claims, err := utils.VerifyToken(c.GetHeader("Authorization"))

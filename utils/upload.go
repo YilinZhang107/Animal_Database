@@ -25,6 +25,7 @@ func UploadAvatarLocal(file multipart.File, fileName string, userId uint) (fileP
 		CreateDir(basePath)
 	}
 	avatarPath := basePath + fileName
+	outPath := "/static/imgs/avatar/" + idStr + "/" + fileName
 	content, err := io.ReadAll(file)
 	if err != nil {
 		return "", err
@@ -33,7 +34,7 @@ func UploadAvatarLocal(file multipart.File, fileName string, userId uint) (fileP
 	if err != nil {
 		return "", err
 	}
-	return avatarPath, err
+	return outPath, err
 }
 
 func DirExistOrNot(fileAddr string) bool { // todo 这个函数有点问题,在文件夹不存在的时候会出一个Info

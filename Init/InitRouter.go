@@ -53,8 +53,8 @@ func NewRouter() {
 		authed.Use(middleware.JWT()) //jwt验证
 		{
 			//user
-			authed.GET("user/selfInfo", v1.SelfInfo) // 获取自身信息
-			authed.POST("user/avatar", v1.UserUpdateAvatar)
+			authed.GET("user/selfInfo", v1.SelfInfo)        // 获取自身信息
+			authed.POST("user/avatar", v1.UserUpdateAvatar) //用户更新或上传头像
 			authed.POST("user/changePassword", v1.UserChangePassword)
 			authed.POST("user/updateEmail", v1.UserUpdateEmail)
 			authed.POST("user/findUsers", v1.FindUsers) // 按条件查看用户, 需要等级验证, 用于之后修改等级
@@ -64,7 +64,7 @@ func NewRouter() {
 
 			//UnreviewedRecord
 			authed.POST("record/uploadByExcel", v1.UploadRecord)              // 上传记录
-			authed.GET("record/getURecord", v1.GetUnreviewedRecord)           // 查询待审批记录
+			authed.POST("record/getURecord", v1.GetUnreviewedRecord)          // 查询待审批记录
 			authed.GET("record/getURecordCount", v1.GetUnreviewedRecordCount) // 查询待审批记录数量
 			authed.POST("record/review", v1.ReviewURecord)                    // 审批待审批记录
 			authed.POST("record/deleteURecord", v1.DeleteURecord)             // 删除待审批记录
