@@ -6,6 +6,7 @@
 package service
 
 import (
+	"Animal_database/VO"
 	"Animal_database/config"
 	"Animal_database/dao"
 	"Animal_database/model"
@@ -53,13 +54,17 @@ func (r *RecordService) GetRecord(id uint) serializer.Response {
 		return serializer.CreateResponse(code, "无权查看", utils.GetMsg(code))
 	}
 
-	uRecords, data, err := dao.GetRecord(r.Page, r.Size, r.GridNumber, r.LineNumber,
+	records, data, err := dao.GetRecord(r.Page, r.Size, r.GridNumber, r.LineNumber,
 		r.StartTime, r.EndTime, r.Province, r.City, r.County, r.SpeciesName, r.Investigator, r.LivingEnvironmentType)
 	if err != nil || data != nil {
 		code = utils.ErrorGetRecordByIds
 		return serializer.CreateResponse(code, data, utils.GetMsg(code))
 	}
-	return serializer.CreateResponse(code, uRecords, utils.GetMsg(code))
+	var VOdata []VO.RecordVO
+	for _, record := range *records {
+		VOdata = append(VOdata, *VO.BuildRecordVO(&record))
+	}
+	return serializer.CreateResponse(code, VOdata, utils.GetMsg(code))
 }
 
 func (r *RecordService) GetByArea() serializer.Response {

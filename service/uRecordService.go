@@ -6,6 +6,7 @@
 package service
 
 import (
+	"Animal_database/VO"
 	"Animal_database/dao"
 	"Animal_database/model"
 	"Animal_database/serializer"
@@ -160,7 +161,11 @@ func (r *URecordService) GetUnreviewedRecord(id uint) serializer.Response {
 		code = utils.ErrorGetUnreviewedRecord
 		return serializer.CreateResponse(code, nil, utils.GetMsg(code))
 	}
-	return serializer.CreateResponse(code, uRecords, utils.GetMsg(code))
+	var data []VO.UnRecordVO
+	for _, uRecord := range *uRecords {
+		data = append(data, *VO.BuildUnRecordVO(&uRecord))
+	}
+	return serializer.CreateResponse(code, data, utils.GetMsg(code))
 }
 
 // GetUnreviewedRecordCount 获取待审批记录数量
