@@ -12,8 +12,15 @@ import (
 	"Animal_database/model"
 	"Animal_database/serializer"
 	"Animal_database/utils"
+	"bufio"
+	"encoding/csv"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"io"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type RecordService struct {
@@ -190,4 +197,138 @@ func (r *RecordService) DeleteRecord(id uint) serializer.Response {
 		return serializer.CreateResponse(code, "删除失败", utils.GetMsg(code))
 	}
 	return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+}
+
+// Download 下载记录
+func (r *RecordService) Download(id uint, c *gin.Context) serializer.Response {
+	code := utils.SUCCESS
+	// todo 是否需要根据权限修改下载范围
+	// 根据传入的参数获取记录,并生成csv文件
+	records, data, err := dao.GetRecordAll(r.GridNumber, r.LineNumber,
+		r.StartTime, r.EndTime, r.Province, r.City, r.County, r.SpeciesName, r.Investigator, r.LivingEnvironmentType)
+	if err != nil || data != nil {
+		code = utils.ErrorGetRecordByIds
+		return serializer.CreateResponse(code, data, utils.GetMsg(code))
+	}
+	// 根据当前时间生成文件名
+	fileName := fmt.Sprintf("Records_%s.csv", time.Now().Format("20060102150405"))
+	path := "./resources/static/tmp/download/" + fileName
+	err = writeRecordsToCSV(records, path)
+	if err != nil {
+		code = utils.ErrorWriteFile
+		return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+	}
+
+	file, err := os.Open(path)
+	if err != nil {
+		code = utils.ErrorOpenFile
+		return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+	}
+	defer file.Close()
+	//fileName := filepath.Base(path)
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", fileName))
+	c.Header("Content-Type", "text/csv; charset=utf-8")
+	c.File(file.Name())
+	//// 删除文件  todo 暂时没做,需要前端下载后删除
+	//err = os.Remove(path)
+	//if err != nil {
+	//	code = utils.ErrorDelFile
+	//	return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+	//}
+	return serializer.CreateResponse(code, nil, utils.GetMsg(code))
+}
+
+func writeRecordsToCSV(records *[]model.Record, path string) error {
+	// 创建一个带UTF-8 BOM的writer
+	utf8bom := []byte{0xEF, 0xBB, 0xBF}
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0777)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	// 写入UTF-8 BOM
+	if _, err := file.Write(utf8bom); err != nil {
+		return err
+	}
+	//file, err := os.Create(path)
+	//if err != nil {
+	//	return fmt.Errorf("failed to create file: %w", err)
+	//}
+	//defer file.Close()
+	//writer := csv.NewWriter(file)
+	//defer writer.Flush()
+
+	utf8Writer := csv.NewWriter(bufio.NewWriter(io.MultiWriter(file)))
+	// 定义CSV列标题（与Record结构体字段对应）
+	cols := []string{
+		"ID",
+		"调查方式",
+		"网格编号",
+		"样线编号",
+		"样线长度",
+		"GPS编号",
+		"物种名称",
+		"数量",
+		"距离(m)",
+		"照片编号",
+		"栖息地照片",
+		"物种受威胁因素",
+		"生境类型",
+		"生境受威胁因素",
+		"受威胁强度",
+		"天气",
+		"调查人",
+		"调查省",
+		"调查市",
+		"调查县",
+		"调查乡",
+		"维度(Lat)",
+		"经度(Lon)",
+		"海拔",
+		"日期与时间",
+		"上传者编号",
+		"审核者编号",
+	}
+	// 写入列标题
+	if err := utf8Writer.Write(cols); err != nil {
+		return fmt.Errorf("failed to write header: %w", err)
+	}
+	// 遍历记录并写入行数据
+	for _, record := range *records {
+		row := []string{
+			fmt.Sprintf("%d", record.ID), // 注意转换为字符串
+			record.InvestigationMethod,
+			record.GridNumber,
+			record.LineNumber,
+			fmt.Sprintf("%.2f", record.LineLength), // 注意转换为字符串并限制精度
+			fmt.Sprintf("%d", record.GPSNumber),
+			record.SpeciesName,
+			fmt.Sprintf("%d", record.Count),
+			record.Distance,
+			record.PictureNumber,
+			record.HabitatPicture,
+			record.SpeciesThreatenedFactor,
+			record.LivingEnvironmentType,
+			record.EnvThreatenedFactor,
+			record.ThreatIntensity,
+			record.Weather,
+			record.Investigator,
+			record.InvestigationProvince,
+			record.InvestigationCity,
+			record.InvestigationCounty,
+			record.InvestigationTown,
+			record.Latitude,
+			record.Longitude,
+			record.Altitude,
+			record.DateAndTime.Format("2006-01-02 15:04:05"), // 格式化日期时间
+			fmt.Sprintf("%d", record.Uploader),
+			fmt.Sprintf("%d", record.Auditor),
+		}
+
+		if err := utf8Writer.Write(row); err != nil {
+			return fmt.Errorf("failed to write record: %w", err)
+		}
+	}
+	utf8Writer.Flush()
+	return nil
 }

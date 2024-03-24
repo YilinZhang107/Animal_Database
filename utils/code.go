@@ -40,6 +40,9 @@ const (
 	ErrorGetURecordByIds = 20012
 	ErrorDelURecordByIds = 20013
 	TimeParseErr         = 20014
+	ErrorOpenFile        = 20015
+	ErrorWriteFile       = 20016
+	ErrorDelFile         = 20017
 	//ErrorHashPassword
 	ErrorHashPassword = 40002
 	//jwt
@@ -82,7 +85,9 @@ var msgs = map[int]string{
 	ErrorGetURecordByIds: "获取记录错误",
 	ErrorDelURecordByIds: "删除记录错误",
 	TimeParseErr:         "时间解析错误",
-
+	ErrorOpenFile:        "打开待下载文件错误",
+	ErrorWriteFile:       "创建待下载文件错误",
+	ErrorDelFile:         "删除文件错误",
 	//
 	ErrorHashPassword: "密码加密错误",
 	//jwt

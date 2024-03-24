@@ -73,7 +73,7 @@ func NewRouter() {
 			authed.POST("record/getRecord", v1.GetRecord)           // 查询现存记录
 			authed.POST("record/deleteRecord", v1.DeleteRecord)     // 删除现存记录
 			authed.POST("record/getRecordCount", v1.GetRecordCount) // 查询现存记录数量
-
+			authed.POST("record/download", v1.Download)             //对现存记录进行下载
 		}
 
 	}

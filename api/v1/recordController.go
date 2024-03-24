@@ -74,3 +74,18 @@ func DeleteRecord(c *gin.Context) {
 		utils.LogrusObj.Infoln("get Record api:", err)
 	}
 }
+
+// Download 下载记录
+func Download(c *gin.Context) {
+	var recordService service.RecordService
+	//鉴权
+	claims, err := utils.VerifyToken(c.GetHeader("Authorization"))
+	id := claims.ID
+	if err = c.ShouldBind(&recordService); err == nil {
+		response := recordService.Download(id, c)
+		c.JSON(http.StatusOK, response)
+	} else {
+		c.JSON(http.StatusBadRequest, serializer.CreateErrResponse(err))
+		utils.LogrusObj.Infoln("get Record api:", err)
+	}
+}
