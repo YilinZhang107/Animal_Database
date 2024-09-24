@@ -28,15 +28,15 @@ type UnreviewedRecord struct {
 	EnvThreatenedFactor     string    `xlsx:"12" gorm:"size:64"`                  //生境受威胁因素
 	ThreatIntensity         string    `xlsx:"13" gorm:"size:16"`                  //威胁强度
 	Weather                 string    `xlsx:"14" gorm:"size:16"`                  //天气
-	Investigator            string    `xlsx:"15" gorm:"size:16"`                  //调查人
+	Investigator            string    `xlsx:"15" gorm:"uniqueIndex:once;size:16"` //调查人
 	InvestigationProvince   string    `xlsx:"16" gorm:"size:16"`                  //调查省
 	InvestigationCity       string    `xlsx:"17" gorm:"size:16"`                  //调查市
 	InvestigationCounty     string    `xlsx:"18" gorm:"size:16"`                  //调查县
 	InvestigationTown       string    `xlsx:"19" gorm:"size:16"`                  //调查乡
-	Latitude                string    `xlsx:"20" gorm:"uniqueIndex:once;size:64"` //纬度
-	Longitude               string    `xlsx:"21" gorm:"uniqueIndex:once;size:64"` //经度
-	Altitude                string    `xlsx:"22" gorm:"size:16"`                  //海拔
-	DateAndTime             time.Time // 调查时间和日期
+	Latitude                string    `xlsx:"20" gorm:"uniqueIndex:once;size:32"` //纬度
+	Longitude               string    `xlsx:"21" gorm:"uniqueIndex:once;size:32"` //经度
+	Altitude                string    `xlsx:"22" gorm:"size:32"`                  //海拔
+	DateAndTime             time.Time `gorm:"uniqueIndex:once"`                   // 调查时间和日期
 	Uploader                uint      //上传者
 
 }

@@ -8,7 +8,6 @@ package dao
 import (
 	"Animal_database/model"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -226,11 +225,11 @@ func DeleteRecordByIds(records *[]model.Record) error {
 }
 
 func UploadRecord(records *[]model.Record) (returnErr error, existRecordsIndex []string) {
-	for _, record := range *records {
+	for i, record := range *records {
 		if err := DB.Model(model.Record{}).Create(&record).Error; err != nil {
 			returnErr = err
-			data := strings.Split(err.Error(), " ")[5]
-			existRecordsIndex = append(existRecordsIndex, data)
+			//data := strings.Split(err.Error(), " ")[5]
+			existRecordsIndex = append(existRecordsIndex, strconv.Itoa(i+1))
 		}
 	}
 	return returnErr, existRecordsIndex

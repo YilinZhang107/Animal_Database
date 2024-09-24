@@ -28,15 +28,15 @@ type Record struct {
 	EnvThreatenedFactor     string    `gorm:"size:64"`                  //生境受威胁因素
 	ThreatIntensity         string    `gorm:"size:16"`                  //威胁强度
 	Weather                 string    `gorm:"size:16"`                  //天气
-	Investigator            string    `gorm:"size:16"`                  //调查人
+	Investigator            string    `gorm:"uniqueIndex:once;size:16"` //调查人
 	InvestigationProvince   string    `gorm:"size:16; index:province"`  //调查省
 	InvestigationCity       string    `gorm:"size:16; index:city"`      //调查市
 	InvestigationCounty     string    `gorm:"size:16; index:county"`    //调查县
 	InvestigationTown       string    `gorm:"size:16; index:town"`      //调查乡
-	Latitude                string    `gorm:"uniqueIndex:once;size:64"` //纬度
-	Longitude               string    `gorm:"uniqueIndex:once;size:64"` //经度
-	Altitude                string    `gorm:"size:16"`                  //海拔
-	DateAndTime             time.Time // 调查时间和日期
+	Latitude                string    `gorm:"uniqueIndex:once;size:32"` //纬度
+	Longitude               string    `gorm:"uniqueIndex:once;size:32"` //经度
+	Altitude                string    `gorm:"size:32"`                  //海拔
+	DateAndTime             time.Time `gorm:"uniqueIndex:once"`         // 调查时间和日期
 	Uploader                uint      //上传者
 	Auditor                 uint      //审核者
 

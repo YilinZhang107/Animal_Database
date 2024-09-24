@@ -5,6 +5,8 @@
 
 package utils
 
+const SpecialDateStr = "01-01-01" // 一个特殊的日期字符串,用于判断日期是否为空
+
 // 定义状态码
 const (
 	SUCCESS = 200

@@ -243,7 +243,7 @@ func checkAndUploadByGrade(file *multipart.FileHeader, grade uint8, id uint) ser
 		return serializer.CreateResponse(code, data, utils.GetMsg(code))
 	}
 
-	//把数据打包到待审批记录或者记录model
+	//把数据打包到待审批记录或者记录model  todo 这里一旦出现问题就会退出,整个表内的数据都不会录入
 	var uRecords []model.UnreviewedRecord
 	for j, row := range excelFile.Sheets[0].Rows[1:] {
 		// 可能会有多的空行
@@ -271,16 +271,21 @@ func checkAndUploadByGrade(file *multipart.FileHeader, grade uint8, id uint) ser
 			case 2:
 				uRecord.LineNumber = cell.String()
 			case 3:
-				uRecord.LineLength, err = cell.Float()
-				if err != nil {
-					code = utils.StringToFloatErr
-					return serializer.CreateResponse(code, "row:"+string(j)+"col:"+string(i), utils.GetMsg(code))
+				if cell.String() == "" {
+					uRecord.LineLength = 0
+				} else {
+					uRecord.LineLength, err = cell.Float()
+					if err != nil {
+						code = utils.StringToFloatErr
+						return serializer.CreateResponse(code, "row: "+strconv.Itoa(j)+" col: "+strconv.Itoa(i), utils.GetMsg(code))
+					}
 				}
+
 			case 4:
 				num, err := cell.Int()
 				if err != nil {
 					code = utils.StringToIntErr
-					return serializer.CreateResponse(code, "row:"+string(j)+"col:"+string(i), utils.GetMsg(code))
+					return serializer.CreateResponse(code, "row: "+strconv.Itoa(j)+" col: "+strconv.Itoa(i), utils.GetMsg(code))
 				}
 				uRecord.GPSNumber = uint64(num)
 			case 5:
@@ -289,7 +294,7 @@ func checkAndUploadByGrade(file *multipart.FileHeader, grade uint8, id uint) ser
 				num, err := cell.Int()
 				if err != nil {
 					code = utils.StringToIntErr
-					return serializer.CreateResponse(code, "row:"+string(j)+"col:"+string(i), utils.GetMsg(code))
+					return serializer.CreateResponse(code, "row:"+strconv.Itoa(j)+"col:"+strconv.Itoa(i), utils.GetMsg(code))
 				}
 				uRecord.Count = uint64(num)
 			case 7:
@@ -320,10 +325,19 @@ func checkAndUploadByGrade(file *multipart.FileHeader, grade uint8, id uint) ser
 				uRecord.InvestigationTown = cell.String()
 			case 20:
 				uRecord.Latitude = cell.String()
+				if len(uRecord.Latitude) > 31 {
+					uRecord.Latitude = uRecord.Latitude[:31]
+				}
 			case 21:
 				uRecord.Longitude = cell.String()
+				if len(uRecord.Longitude) > 31 {
+					uRecord.Longitude = uRecord.Longitude[:31]
+				}
 			case 22:
 				uRecord.Altitude = cell.String()
+				if len(uRecord.Altitude) > 31 {
+					uRecord.Altitude = uRecord.Altitude[:30]
+				}
 			case 23:
 				dateStr = cell.String()
 			case 24:
@@ -331,16 +345,23 @@ func checkAndUploadByGrade(file *multipart.FileHeader, grade uint8, id uint) ser
 			}
 		}
 		// 解析日期字符串
+		if dateStr == "" { //如果日期为空,则默认为特殊日期
+			dateStr = utils.SpecialDateStr
+		}
 		date, err := time.Parse("01-02-06", dateStr)
 		if err != nil {
 			code = utils.StringToDateErr
-			return serializer.CreateResponse(code, "row:"+string(j)+"col:"+string(23), utils.GetMsg(code))
+			return serializer.CreateResponse(code, "row:"+strconv.Itoa(j)+"col:"+"23", utils.GetMsg(code))
 		}
+
 		// 解析时间字符串
+		if timeStr == "" {
+			timeStr = "00:00:00"
+		}
 		t, err := time.Parse("15:04:05", timeStr)
 		if err != nil {
 			code = utils.StringToTimeErr
-			return serializer.CreateResponse(code, "row:"+string(j)+"col:"+string(24), utils.GetMsg(code))
+			return serializer.CreateResponse(code, "row:"+strconv.Itoa(j)+"col:"+"24", utils.GetMsg(code))
 		}
 		// 将日期和时间合并为一个时间对象
 		uRecord.DateAndTime = time.Date(date.Year(), date.Month(), date.Day(), t.Hour(), t.Minute(), t.Second(), 0, time.UTC)
@@ -405,7 +426,7 @@ func checkAndUploadByGrade(file *multipart.FileHeader, grade uint8, id uint) ser
 		if err != nil {
 			if len(existRecords) != 0 {
 				code = utils.DatabaseExistError // 存入重复的会提示 Duplicate entry '红隼-37.202710015699203-102.76243597269' for key 'once'
-				data := "记录:" + strings.Join(existRecords, ",") + "已存在, 其余数据已录入"
+				data := "记录序号:" + strings.Join(existRecords, ",") + "已存在, 其余数据已录入"
 				return serializer.CreateResponse(code, data, utils.GetMsg(code))
 			} else {
 				code = utils.ErrorDatabase

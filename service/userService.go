@@ -75,7 +75,8 @@ func (u *UserService) Login(c context.Context) serializer.Response {
 		return serializer.CreateResponse(code, nil, utils.GetMsg(code))
 	}
 
-	if utils.ComparePassword(user.Password, u.Password) != nil { // 密码校验,失败返回err
+	err = utils.ComparePassword(user.Password, u.Password)
+	if err != nil { // 密码校验,失败返回err
 		code = utils.ErrorPasswordWrong
 		return serializer.CreateResponse(code, err.Error(), utils.GetMsg(code))
 	}
